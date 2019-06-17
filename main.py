@@ -10,7 +10,7 @@ data_gen_args = dict(rotation_range=0.2,
                      zoom_range=0.05,
                      horizontal_flip=True,
                      fill_mode='nearest')
-myGene = data.trainGenerator(2, '/home/matt/proof_example_data/unet_foo', 'input_png', 'masks', data_gen_args, save_to_dir="/home/matt/proof_example_data/unet_foo/augmented/")
+myGene = data.trainGenerator(1, '/home/matt/proof_example_data/unet_foo', 'input_png', 'masks', data_gen_args, save_to_dir="/home/matt/proof_example_data/unet_foo/augmented/")
 
 my_model = model.unet()
 model_checkpoint = ModelCheckpoint('unet_filaments.hdf5', monitor='loss', verbose=1, save_best_only=True)
