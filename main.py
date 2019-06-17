@@ -1,22 +1,21 @@
-from model import *
-from data import *
+from tensorflow.keras.callbacks import ModelCheckpoint
 
-#os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
+import model
+import data
 
 data_gen_args = dict(rotation_range=0.2,
-                    width_shift_range=0.05,
-                    height_shift_range=0.05,
-                    shear_range=0.05,
-                    zoom_range=0.05,
-                    horizontal_flip=True,
-                    fill_mode='nearest')
-myGene = trainGenerator(2,'data/membrane/train','image','label',data_gen_args,save_to_dir = None)
+                     width_shift_range=0.05,
+                     height_shift_range=0.05,
+                     shear_range=0.05,
+                     zoom_range=0.05,
+                     horizontal_flip=True,
+                     fill_mode='nearest')
+myGene = data.trainGenerator(2, '/home/matt/proof_example_data/unet_foo', 'input_png', 'masks', data_gen_args, save_to_dir="/home/matt/proof_example_data/unet_foo/augmented/")
 
-model = unet()
-model_checkpoint = ModelCheckpoint('unet_membrane.hdf5', monitor='loss',verbose=1, save_best_only=True)
-model.fit_generator(myGene,steps_per_epoch=300,epochs=1,callbacks=[model_checkpoint])
+my_model = model.unet()
+model_checkpoint = ModelCheckpoint('unet_filaments.hdf5', monitor='loss', verbose=1, save_best_only=True)
+my_model.fit_generator(myGene, steps_per_epoch=300, epochs=1, callbacks=[model_checkpoint])
 
-testGene = testGenerator("data/membrane/test")
-results = model.predict_generator(testGene,30,verbose=1)
-saveResult("data/membrane/test",results)
+testGene = data.testGenerator("/home/matt/proof_example_data/unet_foo/input_png")
+results = my_model.predict_generator(testGene, 30, verbose=1)
+data.saveResult("/home/matt/proof_example_data/unet_foo/test_output", results)
