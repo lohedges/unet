@@ -6,7 +6,6 @@ import skimage.io as io
 import skimage.transform as trans
 from pandas import Series, DataFrame
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import tensorflow as tf
 
 
@@ -22,9 +21,10 @@ def load_data(input_dir, label_dir, aug_dict):
     input_images = pathlib.Path(input_dir).glob("*")
     label_images = pathlib.Path(label_dir).glob("*")
     input = DataFrame({"image": Series(input_images).apply(str), "mask": Series(label_images).apply(str)})
-    train_filenames, test_filenames = train_test_split(input, test_size=0.2, random_state=1)
+    train_filenames, test_validate_filenames = train_test_split(input, test_size=0.2, random_state=1)
+    validate_filenames, test_filenames = train_test_split(input, test_size=0.8, random_state=1)
 
-    train = train_generator(train_filenames, 2, aug_dict, save_to_dir="/home/matt/proof_example_data/unet_foo/augmented/")
+    train = train_generator(train_filenames, 2, aug_dict)
 
     def gen_test_images():
         for filename in test_filenames["image"]:
@@ -34,10 +34,22 @@ def load_data(input_dir, label_dir, aug_dict):
         for filename in test_filenames["mask"]:
             yield load_resize_reshape(filename, (256, 256))
 
+    def gen_validate_images():
+        for filename in validate_filenames["image"]:
+            yield load_resize_reshape(filename, (256, 256)) / 255
+
+    def gen_validate_masks():
+        for filename in validate_filenames["mask"]:
+            yield load_resize_reshape(filename, (256, 256))
+
     test_images = tf.data.Dataset.from_generator(gen_test_images, output_types=tf.float32)
     test_masks = tf.data.Dataset.from_generator(gen_test_masks, output_types=tf.float32)
     test = tf.data.Dataset.zip((test_images, test_masks))
-    return train, test
+
+    validate_images = tf.data.Dataset.from_generator(gen_validate_images, output_types=tf.float32)
+    validate_masks = tf.data.Dataset.from_generator(gen_validate_masks, output_types=tf.float32)
+    validate = tf.data.Dataset.zip((validate_images, validate_masks))
+    return train, validate, test
 
 
 def train_generator(train_df, batch_size, aug_dict, image_color_mode="grayscale", mask_color_mode="grayscale",

@@ -26,7 +26,7 @@ data_gen_args = dict(
 #    horizontal_flip=True,
 #    fill_mode='nearest'
 #)
-train, test = data.load_data("/home/matt/proof_example_data/unet_foo/input_png", "/home/matt/proof_example_data/unet_foo/masks", data_gen_args)
+train, validate, test = data.load_data("/home/matt/proof_example_data/unet_foo/input_png", "/home/matt/proof_example_data/unet_foo/masks", data_gen_args)
 
 my_model = model.unet()
 #my_model.load_weights('unet_filaments.hdf5')
