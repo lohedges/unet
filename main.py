@@ -1,9 +1,7 @@
-from tensorflow.keras.callbacks import ModelCheckpoint
+import tensorflow as tf
 
-import model
 import data
-
-import numpy as np
+import model
 
 data_gen_args = dict(
     rotation_range=180,  # degrees?
@@ -30,11 +28,18 @@ train, validate, test = data.load_data("/home/matt/proof_example_data/unet_foo/i
 
 my_model = model.unet()
 #my_model.load_weights('unet_filaments.hdf5')
-model_checkpoint = ModelCheckpoint('unet_filaments.hdf5', monitor='loss', verbose=1, save_best_only=True)
+model_checkpoint = tf.keras.callbacks.ModelCheckpoint('unet_filaments.hdf5', monitor='val_loss', verbose=1, save_best_only=True)
+tensorboard = tf.keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=1, write_images=True, write_graph=True)
 
 print("# Fitting")
 
-my_model.fit_generator(train, steps_per_epoch=1, epochs=1, callbacks=[model_checkpoint])
+my_model.fit_generator(
+    train,
+    steps_per_epoch=500,
+    epochs=5,
+    callbacks=[model_checkpoint, tensorboard],
+    validation_data=validate,
+)
 
 print("# Testing")
 
