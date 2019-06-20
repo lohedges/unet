@@ -55,13 +55,8 @@ def load_data(input_dir, label_dir, aug_dict):
 def train_generator(train_df, batch_size, aug_dict, image_color_mode="grayscale", mask_color_mode="grayscale",
                     image_save_prefix="image", mask_save_prefix="mask", save_to_dir=None, target_size=(256, 256),
                     seed=1):
-    """
-    can generate image and mask at the same time
-    use the same seed for image_datagen and mask_datagen to ensure the transformation for image and mask is the same
-    if you want to visualize the results of generator, set save_to_dir = "your path"
-    """
-    image_datagen = ImageDataGenerator(**aug_dict)
-    mask_datagen = ImageDataGenerator(**aug_dict)
+    image_datagen = tf.keras.preprocessing.image.ImageDataGenerator(**aug_dict)
+    mask_datagen = tf.keras.preprocessing.image.ImageDataGenerator(**aug_dict)
     image_generator = image_datagen.flow_from_dataframe(
         train_df,
         x_col="image",
@@ -88,10 +83,9 @@ def train_generator(train_df, batch_size, aug_dict, image_color_mode="grayscale"
 
 
 def load_resize_reshape(filename, target_size=(256, 256)):
-    img = np.reshape(img, img.shape + (1,))
-    img = np.reshape(img, (1,) + img.shape)
     img = skimage.io.imread(filename, as_gray=True)
     img = skimage.transform.resize(img, target_size)
+    img = img[np.newaxis, :, :, np.newaxis]
     return img
 
 
