@@ -2,3 +2,4 @@ tensorflow-gpu==2.0.0-beta1
 scikit-image
 scikit-learn
 pandas
+mrcfile
