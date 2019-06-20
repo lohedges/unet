@@ -2,8 +2,8 @@ import os
 import pathlib
 
 import numpy as np
-import skimage.io as io
-import skimage.transform as trans
+import skimage.io
+import skimage.transform
 from pandas import Series, DataFrame
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
@@ -88,14 +88,14 @@ def train_generator(train_df, batch_size, aug_dict, image_color_mode="grayscale"
 
 
 def load_resize_reshape(filename, target_size=(256, 256)):
-    img = io.imread(filename, as_gray=True)
-    img = trans.resize(img, target_size)
     img = np.reshape(img, img.shape + (1,))
     img = np.reshape(img, (1,) + img.shape)
+    img = skimage.io.imread(filename, as_gray=True)
+    img = skimage.transform.resize(img, target_size)
     return img
 
 
 def save_result(save_path, npyfile):
     for i, item in enumerate(npyfile):
         img = item[:, :, 0]
-        io.imsave(os.path.join(save_path, "%d_predict.png" % i), img)
+        skimage.io.imsave(os.path.join(save_path, "%d_predict.png" % i), img)
