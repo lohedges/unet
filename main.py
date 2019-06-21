@@ -4,26 +4,26 @@ import data
 import model
 
 data_gen_args = dict(
-    rotation_range=180,  # degrees?
+    rotation_range=15,  # degrees?
     width_shift_range=0.05,
     height_shift_range=0.05,
     shear_range=5,  # degrees?
     zoom_range=0.1,
-    brightness_range=[0.8, 1.1],
+    brightness_range=[0.9, 1.1],
     horizontal_flip=True,
     vertical_flip=True,
     fill_mode='reflect',  # reflect?
     #preprocessing_function=foo,  # something to do the warping
 )
-#data_gen_args = dict(
-#    rotation_range=0.2,
-#    width_shift_range=0.05,
-#    height_shift_range=0.05,
-#    shear_range=0.05,
-#    zoom_range=0.05,
-#    horizontal_flip=True,
-#    fill_mode='nearest'
-#)
+# data_gen_args = dict(
+#     rotation_range=0.2,
+#     width_shift_range=0.05,
+#     height_shift_range=0.05,
+#     shear_range=0.05,
+#     zoom_range=0.05,
+#     horizontal_flip=True,
+#     fill_mode='nearest'
+# )
 train, validate, test = data.load_data("/home/matt/proof_example_data/unet_foo/input_png", "/home/matt/proof_example_data/unet_foo/masks", data_gen_args)
 
 my_model = model.unet()
