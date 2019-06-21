@@ -28,7 +28,7 @@ train, validate, test = data.load_data(
 my_model = model.unet(input_size=image_size + (1,))
 #my_model.load_weights('unet_filaments.hdf5')
 model_checkpoint = tf.keras.callbacks.ModelCheckpoint('unet_filaments.hdf5', monitor='val_loss', verbose=1, save_best_only=True)
-tensorboard = tf.keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=1, write_images=True, write_graph=True)
+tensorboard = tf.keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=1)
 
 print("# Fitting")
 
