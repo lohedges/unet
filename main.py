@@ -1,3 +1,4 @@
+import skimage.io
 import tensorflow as tf
 
 import data
@@ -53,4 +54,4 @@ my_model.save('my_model.hdf5')
 print("# Predicting")
 
 results = my_model.predict(data.load_resize_reshape("/home/matt/proof_example_data/unet_foo/input_png/FoilHole_24677417_Data_24671816_24671817_20181025_1806-79997.png"), verbose=1)
-data.save_result("/home/matt/proof_example_data/unet_foo/test_output", results)
+skimage.io.imsave("/home/matt/proof_example_data/unet_foo/test_output/blah.png", results[0, :, :, 0])
