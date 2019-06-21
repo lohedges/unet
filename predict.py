@@ -5,6 +5,7 @@ import numpy as np
 import sklearn.linear_model
 import skimage.io
 import skimage.transform
+import skimage.color
 import tensorflow as tf
 
 
@@ -40,8 +41,13 @@ shifted = d - d_min
 shifted /= d_max - d_min
 d = shifted
 
-d = d[np.newaxis, :, :, np.newaxis]  # Reshape to (batch size, x, y, layers)
+results = my_model.predict(d[np.newaxis, :, :, np.newaxis], verbose=1)[0, :, :, 0]
 
-results = my_model.predict(d, verbose=1)
+threshold = 0.8
+results[results > threshold] = 1
+results[results <= threshold] = 0
+d = skimage.color.gray2rgb(d)
 
-skimage.io.imsave("blah.png", results[0, :, :, 0])
+d[:, :, 0][results == 0] = 1
+
+skimage.io.imsave("blah.png", d)
