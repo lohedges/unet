@@ -10,7 +10,10 @@ import tensorflow as tf
 
 
 def adjust_data(img, mask):
-    img = img / 255
+    d_min = img.min()
+    d_max = img.max()
+    img -= d_min
+    img /= d_max - d_min
     mask = mask / 255
     mask[mask > 0.5] = 1
     mask[mask <= 0.5] = 0
