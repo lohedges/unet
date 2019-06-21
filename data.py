@@ -31,19 +31,25 @@ def load_data(input_dir, label_dir, aug_dict):
 
     def gen_test_images():
         for filename in test_filenames["image"]:
-            yield load_resize_reshape(filename, (256, 256)) / 255
+            yield load_resize_reshape(filename, (256, 256))
 
     def gen_test_masks():
         for filename in test_filenames["mask"]:
-            yield load_resize_reshape(filename, (256, 256))
+            mask = load_resize_reshape(filename, (256, 256))
+            mask[mask > 0.5] = 1
+            mask[mask <= 0.5] = 0
+            yield mask
 
     def gen_validate_images():
         for filename in validate_filenames["image"]:
-            yield load_resize_reshape(filename, (256, 256)) / 255
+            yield load_resize_reshape(filename, (256, 256))
 
     def gen_validate_masks():
         for filename in validate_filenames["mask"]:
-            yield load_resize_reshape(filename, (256, 256))
+            mask = load_resize_reshape(filename, (256, 256))
+            mask[mask > 0.5] = 1
+            mask[mask <= 0.5] = 0
+            yield mask
 
     test_images = tf.data.Dataset.from_generator(gen_test_images, output_types=tf.float32)
     test_masks = tf.data.Dataset.from_generator(gen_test_masks, output_types=tf.float32)
@@ -89,6 +95,10 @@ def load_resize_reshape(filename, target_size=(256, 256)):
     img = skimage.io.imread(filename, as_gray=True)
     img = skimage.transform.resize(img, target_size)
     img = img[np.newaxis, :, :, np.newaxis]
+    d_min = img.min()
+    d_max = img.max()
+    img -= d_min
+    img /= d_max - d_min
     return img
 
 
