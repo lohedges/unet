@@ -15,7 +15,7 @@ data_gen_args = dict(
     brightness_range=[0.9, 1.1],
     horizontal_flip=True,
     vertical_flip=True,
-    fill_mode='reflect',  # reflect?
+    fill_mode='mirror',  # reflect?
     #preprocessing_function=foo,  # something to do the warping
 )
 train, validate, test = data.load_data(
