@@ -20,7 +20,7 @@ def adjust_data(img, mask):
     return img, mask
 
 
-def load_data(input_dir, label_dir, aug_dict):
+def load_data(input_dir, label_dir, aug_dict, target_size=(256, 256)):
     input_images = pathlib.Path(input_dir).glob("*")
     label_images = pathlib.Path(label_dir).glob("*")
     input = DataFrame({"image": Series(input_images).apply(str), "mask": Series(label_images).apply(str)})
@@ -31,26 +31,26 @@ def load_data(input_dir, label_dir, aug_dict):
     print(f"Validate examples: {len(validate_filenames)}")
     print(f"    Test examples: {len(test_filenames)}")
 
-    train = train_generator(train_filenames, 2, aug_dict)
+    train = train_generator(train_filenames, 2, aug_dict, target_size=target_size)
 
     def gen_test_images():
         for filename in test_filenames["image"]:
-            yield load_resize_reshape(filename, (256, 256))
+            yield load_resize_reshape(filename, target_size=target_size)
 
     def gen_test_masks():
         for filename in test_filenames["mask"]:
-            mask = load_resize_reshape(filename, (256, 256))
+            mask = load_resize_reshape(filename, target_size=target_size)
             mask[mask > 0.5] = 1
             mask[mask <= 0.5] = 0
             yield mask
 
     def gen_validate_images():
         for filename in validate_filenames["image"]:
-            yield load_resize_reshape(filename, (256, 256))
+            yield load_resize_reshape(filename, target_size=target_size)
 
     def gen_validate_masks():
         for filename in validate_filenames["mask"]:
-            mask = load_resize_reshape(filename, (256, 256))
+            mask = load_resize_reshape(filename, target_size=target_size)
             mask[mask > 0.5] = 1
             mask[mask <= 0.5] = 0
             yield mask

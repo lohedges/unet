@@ -4,6 +4,8 @@ import tensorflow as tf
 import data
 import model
 
+image_size = (256, 256)
+
 data_gen_args = dict(
     rotation_range=15,  # degrees?
     width_shift_range=0.05,
@@ -25,9 +27,14 @@ data_gen_args = dict(
 #     horizontal_flip=True,
 #     fill_mode='nearest'
 # )
-train, validate, test = data.load_data("/home/matt/proof_example_data/unet_foo/input_png", "/home/matt/proof_example_data/unet_foo/masks", data_gen_args)
+train, validate, test = data.load_data(
+    "/home/matt/proof_example_data/unet_foo/input_png",
+    "/home/matt/proof_example_data/unet_foo/masks",
+    data_gen_args,
+    target_size=image_size,
+)
 
-my_model = model.unet()
+my_model = model.unet(input_size=image_size + (1,))
 #my_model.load_weights('unet_filaments.hdf5')
 model_checkpoint = tf.keras.callbacks.ModelCheckpoint('unet_filaments.hdf5', monitor='val_loss', verbose=1, save_best_only=True)
 tensorboard = tf.keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=1, write_images=True, write_graph=True)
