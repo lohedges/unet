@@ -25,7 +25,7 @@ def load_data(input_dir, label_dir, aug_dict):
     label_images = pathlib.Path(label_dir).glob("*")
     input = DataFrame({"image": Series(input_images).apply(str), "mask": Series(label_images).apply(str)})
     train_filenames, test_validate_filenames = train_test_split(input, test_size=0.2, random_state=1)
-    validate_filenames, test_filenames = train_test_split(input, test_size=0.8, random_state=1)
+    validate_filenames, test_filenames = train_test_split(test_validate_filenames, test_size=0.5, random_state=1)
 
     train = train_generator(train_filenames, 2, aug_dict)
 
