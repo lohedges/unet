@@ -27,6 +27,10 @@ def load_data(input_dir, label_dir, aug_dict):
     train_filenames, test_validate_filenames = train_test_split(input, test_size=0.2, random_state=1)
     validate_filenames, test_filenames = train_test_split(test_validate_filenames, test_size=0.5, random_state=1)
 
+    print(f"   Train examples: {len(train_filenames)}")
+    print(f"Validate examples: {len(validate_filenames)}")
+    print(f"    Test examples: {len(test_filenames)}")
+
     train = train_generator(train_filenames, 2, aug_dict)
 
     def gen_test_images():
