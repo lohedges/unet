@@ -20,7 +20,7 @@ def adjust_data(img, mask):
     return img, mask
 
 
-def load_data(input_dir, label_dir, aug_dict, target_size=(256, 256)):
+def load_data(input_dir, label_dir, aug_dict, target_size=(256, 256), batch_size=2):
     input_images = pathlib.Path(input_dir).glob("*")
     label_images = pathlib.Path(label_dir).glob("*")
     input = DataFrame({"image": Series(input_images).apply(str), "mask": Series(label_images).apply(str)})
@@ -31,7 +31,7 @@ def load_data(input_dir, label_dir, aug_dict, target_size=(256, 256)):
     print(f"Validate examples: {len(validate_filenames)}")
     print(f"    Test examples: {len(test_filenames)}")
 
-    train = train_generator(train_filenames, 2, aug_dict, target_size=target_size)
+    train = train_generator(train_filenames, batch_size, aug_dict, target_size=target_size)
 
     def gen_test_images():
         for filename in test_filenames["image"]:

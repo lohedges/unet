@@ -5,6 +5,7 @@ import data
 import model
 
 image_size = (256, 256)
+batch_size = 2
 
 data_gen_args = dict(
     rotation_range=15,  # degrees?
@@ -23,6 +24,7 @@ train, validate, test = data.load_data(
     "/home/matt/proof_example_data/unet_foo/masks",
     data_gen_args,
     target_size=image_size,
+    batch_size=batch_size,
 )
 
 my_model = model.unet(input_size=image_size + (1,))
