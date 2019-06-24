@@ -37,7 +37,7 @@ print("# Fitting")
 my_model.fit_generator(
     train,
     steps_per_epoch=30,
-    epochs=100,
+    epochs=200,
     callbacks=[model_checkpoint, tensorboard],
     validation_data=validate,
     validation_steps=7,
