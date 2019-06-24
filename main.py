@@ -5,7 +5,7 @@ import data
 import model
 
 image_size = (256, 256)
-batch_size = 2
+batch_size = 3
 
 data_gen_args = dict(
     rotation_range=15,  # degrees?
@@ -36,7 +36,7 @@ print("# Fitting")
 
 my_model.fit_generator(
     train,
-    steps_per_epoch=30,
+    steps_per_epoch=20,
     epochs=200,
     callbacks=[model_checkpoint, tensorboard],
     validation_data=validate,
