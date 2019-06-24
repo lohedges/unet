@@ -34,10 +34,11 @@ print("# Fitting")
 
 my_model.fit_generator(
     train,
-    steps_per_epoch=500,
-    epochs=5,
+    steps_per_epoch=30,
+    epochs=100,
     callbacks=[model_checkpoint, tensorboard],
     validation_data=validate,
+    validation_steps=7,
 )
 
 print("# Testing")
