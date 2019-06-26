@@ -1,6 +1,7 @@
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, Dropout, concatenate
 from tensorflow.keras.optimizers import Adam
+import tensorflow as tf
 
 
 def unet(input_size=(256, 256, 1)):
@@ -47,6 +48,6 @@ def unet(input_size=(256, 256, 1)):
 
     model = Model(inputs=inputs, outputs=conv10)
 
-    model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=2)])
 
     return model

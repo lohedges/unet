@@ -45,8 +45,8 @@ my_model.fit_generator(
 
 print("# Testing")
 
-test_loss, test_acc = my_model.evaluate(test, verbose=1)
-print(f"\n\nAccuracy: {test_acc*100:4.1f}%\n")
+test_loss, test_acc, test_iou = my_model.evaluate(test, verbose=0)
+print(f"\n\n    Loss: {test_loss:4.3f}\nAccuracy: {test_acc*100:4.1f}%\n     IoU: {test_iou:4.3f}")
 
 print("# Saving")
 
