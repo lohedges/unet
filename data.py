@@ -33,17 +33,6 @@ def load_data(input_dir, label_dir, aug_dict, target_size=(256, 256), batch_size
 
     train = train_generator(train_filenames, batch_size, aug_dict, target_size=target_size)
 
-    def gen_test_images():
-        for filename in test_filenames["image"]:
-            yield load_resize_reshape(filename, target_size=target_size)
-
-    def gen_test_masks():
-        for filename in test_filenames["mask"]:
-            mask = load_resize_reshape(filename, target_size=target_size)
-            mask[mask > 0.5] = 1
-            mask[mask <= 0.5] = 0
-            yield mask
-
     def gen_validate_images():
         for filename in validate_filenames["image"]:
             yield load_resize_reshape(filename, target_size=target_size)
@@ -55,13 +44,25 @@ def load_data(input_dir, label_dir, aug_dict, target_size=(256, 256), batch_size
             mask[mask <= 0.5] = 0
             yield mask
 
-    test_images = tf.data.Dataset.from_generator(gen_test_images, output_types=tf.float32)
-    test_masks = tf.data.Dataset.from_generator(gen_test_masks, output_types=tf.float32)
-    test = tf.data.Dataset.zip((test_images, test_masks))
+    def gen_test_images():
+        for filename in test_filenames["image"]:
+            yield load_resize_reshape(filename, target_size=target_size)
+
+    def gen_test_masks():
+        for filename in test_filenames["mask"]:
+            mask = load_resize_reshape(filename, target_size=target_size)
+            mask[mask > 0.5] = 1
+            mask[mask <= 0.5] = 0
+            yield mask
 
     validate_images = tf.data.Dataset.from_generator(gen_validate_images, output_types=tf.float32)
     validate_masks = tf.data.Dataset.from_generator(gen_validate_masks, output_types=tf.float32)
     validate = tf.data.Dataset.zip((validate_images, validate_masks))
+
+    test_images = tf.data.Dataset.from_generator(gen_test_images, output_types=tf.float32)
+    test_masks = tf.data.Dataset.from_generator(gen_test_masks, output_types=tf.float32)
+    test = tf.data.Dataset.zip((test_images, test_masks))
+
     return train, validate, test
 
 
