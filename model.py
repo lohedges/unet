@@ -1,4 +1,3 @@
-from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, Dropout, concatenate
 from tensorflow.keras.optimizers import Adam
 import tensorflow as tf
@@ -46,7 +45,7 @@ def unet(input_size=(256, 256, 1)):
     conv9 = Conv2D(2, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
     conv10 = Conv2D(1, 1, activation='sigmoid')(conv9)
 
-    model = Model(inputs=inputs, outputs=conv10)
+    model = tf.keras.models.Model(inputs=inputs, outputs=conv10)
 
     model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=2)])
 
