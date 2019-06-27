@@ -3,7 +3,7 @@ from tensorflow.keras.optimizers import Adam
 import tensorflow as tf
 
 
-def unet(input_size=(256, 256, 1)):
+def unet(input_size=(256, 256, 1), learning_rate=1e-4):
     inputs = Input(input_size)
     conv1 = Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(inputs)
     conv1 = Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv1)
@@ -47,6 +47,6 @@ def unet(input_size=(256, 256, 1)):
 
     model = tf.keras.models.Model(inputs=inputs, outputs=conv10)
 
-    model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=2)])
+    model.compile(optimizer=Adam(lr=learning_rate), loss='binary_crossentropy', metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=2)])
 
     return model
