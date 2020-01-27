@@ -1,5 +1,7 @@
-from model import *
-from data import *
+import tensorflow as tf
+
+from model import unet
+from data import trainGenerator, testGenerator, saveResult
 
 #os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -14,7 +16,7 @@ data_gen_args = dict(rotation_range=0.2,
 myGene = trainGenerator(2,'data/membrane/train','image','label',data_gen_args,save_to_dir = None)
 
 model = unet()
-model_checkpoint = ModelCheckpoint('unet_membrane.hdf5', monitor='loss',verbose=1, save_best_only=True)
+model_checkpoint = tf.keras.callbacks.ModelCheckpoint('unet_membrane.hdf5', monitor='loss',verbose=1, save_best_only=True)
 model.fit_generator(myGene,steps_per_epoch=300,epochs=1,callbacks=[model_checkpoint])
 
 testGene = testGenerator("data/membrane/test")

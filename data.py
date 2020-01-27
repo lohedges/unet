@@ -1,8 +1,9 @@
 from __future__ import print_function
-from keras.preprocessing.image import ImageDataGenerator
 import numpy as np 
 import os
 import glob
+
+import tensorflow as tf
 import skimage.io as io
 import skimage.transform as trans
 
@@ -53,8 +54,8 @@ def trainGenerator(batch_size,train_path,image_folder,mask_folder,aug_dict,image
     use the same seed for image_datagen and mask_datagen to ensure the transformation for image and mask is the same
     if you want to visualize the results of generator, set save_to_dir = "your path"
     '''
-    image_datagen = ImageDataGenerator(**aug_dict)
-    mask_datagen = ImageDataGenerator(**aug_dict)
+    image_datagen = tf.keras.preprocessing.image.ImageDataGenerator(**aug_dict)
+    mask_datagen = tf.keras.preprocessing.image.ImageDataGenerator(**aug_dict)
     image_generator = image_datagen.flow_from_directory(
         train_path,
         classes = [image_folder],
