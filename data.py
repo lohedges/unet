@@ -83,14 +83,14 @@ def trainGenerator(batch_size,train_path,image_folder,mask_folder,aug_dict,image
 
 
 
-def testGenerator(test_path,num_image = 30,target_size = (256,256),flag_multi_class = False,as_gray = True):
-    for i in range(num_image):
-        img = io.imread(os.path.join(test_path,"%d.png"%i),as_gray = as_gray)
-        img = img / 255
-        img = trans.resize(img,target_size)
-        img = np.reshape(img,img.shape+(1,)) if (not flag_multi_class) else img
-        img = np.reshape(img,(1,)+img.shape)
-        yield img
+def testGenerator(test_path, target_size = (256,256),flag_multi_class = False,as_gray = True):
+    fn = "FoilHole_24681291_Data_24671848_24671849_20181025_0148-78831.png"
+    img = io.imread(os.path.join(test_path,fn),as_gray = as_gray)
+    img = img / 255
+    img = trans.resize(img,target_size)
+    img = np.reshape(img,img.shape+(1,)) if (not flag_multi_class) else img
+    img = np.reshape(img,(1,)+img.shape)
+    yield img
 
 
 def geneTrainNpy(image_path,mask_path,flag_multi_class = False,num_class = 2,image_prefix = "image",mask_prefix = "mask",image_as_gray = True,mask_as_gray = True):
