@@ -48,8 +48,7 @@ def unet(pretrained_weights=None, input_size=(256, 256, 1)):
 
     model = tf.keras.models.Model(inputs=inputs, outputs=conv10)
 
-    model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
-    # Use tf.keras.metrics.MeanIoU(num_classes=2) as another metric?
+    model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=2)])
 
     # model.summary()
 
