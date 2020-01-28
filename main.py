@@ -17,7 +17,7 @@ myGene = trainGenerator(2,'data/filament/train','image','label',data_gen_args,sa
 
 model = unet()
 model_checkpoint = tf.keras.callbacks.ModelCheckpoint('unet_filament.hdf5', monitor='loss',verbose=1, save_best_only=True)
-model.fit_generator(myGene,steps_per_epoch=1000,epochs=1,callbacks=[model_checkpoint])
+model.fit_generator(myGene,steps_per_epoch=10000,epochs=1,callbacks=[model_checkpoint])
 
 testGene = testGenerator("data/filament/test")
 results = model.predict_generator(testGene,verbose=1)
