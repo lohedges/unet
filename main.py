@@ -21,7 +21,9 @@ train, validate = trainGenerator(2, 'data/filament/train', 'image', 'label', dat
 
 model = unet()
 model_checkpoint = tf.keras.callbacks.ModelCheckpoint('unet_filament.hdf5', monitor='val_loss', verbose=1, save_best_only=True)
-model.fit(train, steps_per_epoch=100, epochs=30, callbacks=[model_checkpoint], validation_data=validate, validation_steps=10)
+es = tf.keras.callbacks.EarlyStopping(monitor='val_loss', verbose=1, patience=10)
+tensorboard = tf.keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=1, write_images=True)
+model.fit(train, steps_per_epoch=100, epochs=1000, callbacks=[model_checkpoint, es, tensorboard], validation_data=validate, validation_steps=1)
 
 testGene = testGenerator("data/filament/test")
 results = model.predict(testGene, verbose=1)
