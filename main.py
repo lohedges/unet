@@ -17,8 +17,13 @@ if gpus:
 
 batch_size = 2
 images_per_epoch = 200
-steps_per_epoch = images_per_epoch / batch_size
+steps_per_epoch = images_per_epoch // batch_size
 epochs = 1000
+
+print(f"      Batch size: {batch_size}")
+print(f"Images per epoch: {images_per_epoch}")
+print(f" Steps per epoch: {steps_per_epoch}")
+print(f"          Epochs: {epochs}")
 
 data_gen_args = dict(
     rotation_range=15,  # degrees
