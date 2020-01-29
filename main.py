@@ -19,11 +19,14 @@ batch_size = 2
 images_per_epoch = 200
 steps_per_epoch = images_per_epoch // batch_size
 epochs = 1000
+learning_rate = 1e-4
 
 print(f"      Batch size: {batch_size}")
 print(f"Images per epoch: {images_per_epoch}")
 print(f" Steps per epoch: {steps_per_epoch}")
 print(f"          Epochs: {epochs}")
+
+print(f"   Learning rate: {learning_rate}")
 
 data_gen_args = dict(
     rotation_range=15,  # degrees
@@ -40,7 +43,7 @@ data_gen_args = dict(
 )
 train, validate = trainGenerator(batch_size, 'data/filament/train', 'image', 'label', data_gen_args, save_to_dir=None)
 
-model = unet()
+model = unet(learning_rate=learning_rate)
 model_checkpoint = tf.keras.callbacks.ModelCheckpoint('unet_filament.hdf5', monitor='val_loss', verbose=1, save_best_only=True)
 es = tf.keras.callbacks.EarlyStopping(monitor='val_loss', verbose=1, patience=10)
 tensorboard = tf.keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=1, write_images=True)
