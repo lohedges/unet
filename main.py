@@ -15,6 +15,11 @@ if gpus:
         # Memory growth must be set before GPUs have been initialized
         print(e)
 
+batch_size = 2
+images_per_epoch = 200
+steps_per_epoch = images_per_epoch / batch_size
+epochs = 1000
+
 data_gen_args = dict(
     rotation_range=15,  # degrees
     width_shift_range=0.05,
@@ -28,13 +33,13 @@ data_gen_args = dict(
     #preprocessing_function=foo,  # something to do the warping
     validation_split=0.1,  # Fraction of data to use for validation
 )
-train, validate = trainGenerator(2, 'data/filament/train', 'image', 'label', data_gen_args, save_to_dir=None)
+train, validate = trainGenerator(batch_size, 'data/filament/train', 'image', 'label', data_gen_args, save_to_dir=None)
 
 model = unet()
 model_checkpoint = tf.keras.callbacks.ModelCheckpoint('unet_filament.hdf5', monitor='val_loss', verbose=1, save_best_only=True)
 es = tf.keras.callbacks.EarlyStopping(monitor='val_loss', verbose=1, patience=10)
 tensorboard = tf.keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=1, write_images=True)
-model.fit(train, steps_per_epoch=100, epochs=1000, callbacks=[model_checkpoint, es, tensorboard], validation_data=validate, validation_steps=1)
+model.fit(train, steps_per_epoch=steps_per_epoch, epochs=epochs, callbacks=[model_checkpoint, es, tensorboard], validation_data=validate, validation_steps=1)
 
 testGene = testGenerator("data/filament/test")
 results = model.predict(testGene, verbose=1)
