@@ -1,3 +1,7 @@
+import os
+from datetime import datetime
+from pathlib import Path
+
 import tensorflow as tf
 
 from model import unet
@@ -14,6 +18,18 @@ if gpus:
     except RuntimeError as e:
         # Memory growth must be set before GPUs have been initialized
         print(e)
+
+job_id = os.environ.get("PBS_JOBID", datetime.now().isoformat(timespec="seconds"))
+
+cwd = Path.cwd()
+output_dir = cwd / job_id
+output_dir.mkdir()
+
+log_dir = cwd/"logs"/job_id
+log_dir.mkdir(parents=True)
+
+print(f"Writing output to {output_dir}")
+print(f"Tensorboard logs written to {log_dir}")
 
 batch_size = 2
 images_per_epoch = 200
@@ -44,11 +60,11 @@ data_gen_args = dict(
 train, validate = trainGenerator(batch_size, 'data/filament/train', 'image', 'label', data_gen_args, save_to_dir=None)
 
 model = unet(learning_rate=learning_rate)
-model_checkpoint = tf.keras.callbacks.ModelCheckpoint('unet_filament.hdf5', monitor='val_loss', verbose=1, save_best_only=True)
+model_checkpoint = tf.keras.callbacks.ModelCheckpoint(str(output_dir/'unet_filament.hdf5'), monitor='val_loss', verbose=1, save_best_only=True)
 es = tf.keras.callbacks.EarlyStopping(monitor='val_loss', verbose=1, patience=10)
-tensorboard = tf.keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=1, write_images=True)
+tensorboard = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1, write_images=True)
 model.fit(train, steps_per_epoch=steps_per_epoch, epochs=epochs, callbacks=[model_checkpoint, es, tensorboard], validation_data=validate, validation_steps=1)
 
 testGene = testGenerator("data/filament/test")
 results = model.predict(testGene, verbose=1)
-saveResult("data/filament/test", results)
+saveResult(output_dir, results)
