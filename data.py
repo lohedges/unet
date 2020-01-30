@@ -65,13 +65,14 @@ def train_generator(batch_size, train_path, image_folder, mask_folder, aug_dict,
 
 
 def test_generator(test_path, target_size=(256, 256), as_gray=True):
-    fn = "FoilHole_24681291_Data_24671848_24671849_20181025_0148-78831.png"
-    img = io.imread(os.path.join(test_path, fn), as_gray=as_gray)
-    img = img / 255
-    img = trans.resize(img, target_size)
-    img = np.reshape(img, img.shape+(1,))
-    img = np.reshape(img, (1,)+img.shape)
-    yield img
+    filenames = ["FoilHole_24681291_Data_24671848_24671849_20181025_0148-78831.png"]
+    for filename in filenames:
+        img = io.imread(os.path.join(test_path, filename), as_gray=as_gray)
+        img = img / 255
+        img = trans.resize(img, target_size)
+        img = np.reshape(img, img.shape+(1,))
+        img = np.reshape(img, (1,)+img.shape)
+        yield img
 
 
 def save_result(save_path, npyfile):
