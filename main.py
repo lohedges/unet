@@ -45,12 +45,12 @@ print(f"          Epochs: {epochs}")
 print(f"   Learning rate: {learning_rate}")
 
 data_gen_args = dict(
-    rotation_range=15,  # degrees
-    width_shift_range=0.05,
-    height_shift_range=0.05,
-    shear_range=5,  # degrees
+    rotation_range=45,  # degrees
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    shear_range=15,  # degrees
     zoom_range=0.1,
-    brightness_range=[0.9, 1.1],
+    brightness_range=[0.8, 1.2],
     horizontal_flip=True,
     vertical_flip=True,
     fill_mode='mirror',
