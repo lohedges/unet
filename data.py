@@ -23,53 +23,41 @@ def train_generator(batch_size, train_path, image_folder, mask_folder, aug_dict,
     if you want to visualize the results of generator, set save_to_dir = "your path"
     """
     datagen = tf.keras.preprocessing.image.ImageDataGenerator(**aug_dict)
+    kwargs = {
+        "directory": train_path,
+        "class_mode": None,
+        "target_size": target_size,
+        "batch_size": batch_size,
+        "save_to_dir": save_to_dir,
+        "seed": seed,
+    }
     image_generator = datagen.flow_from_directory(
-        train_path,
         classes=[image_folder],
-        class_mode=None,
         color_mode=image_color_mode,
-        target_size=target_size,
-        batch_size=batch_size,
-        save_to_dir=save_to_dir,
         save_prefix=image_save_prefix,
-        seed=seed,
         subset="training",
+        **kwargs,
     )
     mask_generator = datagen.flow_from_directory(
-        train_path,
         classes=[mask_folder],
-        class_mode=None,
         color_mode=mask_color_mode,
-        target_size=target_size,
-        batch_size=batch_size,
-        save_to_dir=save_to_dir,
         save_prefix=mask_save_prefix,
-        seed=seed,
         subset="training",
+        **kwargs,
     )
     val_image_generator = datagen.flow_from_directory(
-        train_path,
         classes=[image_folder],
-        class_mode=None,
         color_mode=image_color_mode,
-        target_size=target_size,
-        batch_size=batch_size,
-        save_to_dir=save_to_dir,
         save_prefix=image_save_prefix,
-        seed=seed,
         subset="validation",
+        **kwargs,
     )
     val_mask_generator = datagen.flow_from_directory(
-        train_path,
         classes=[mask_folder],
-        class_mode=None,
         color_mode=mask_color_mode,
-        target_size=target_size,
-        batch_size=batch_size,
-        save_to_dir=save_to_dir,
         save_prefix=mask_save_prefix,
-        seed=seed,
         subset="validation",
+        **kwargs,
     )
     train_gen = (adjust_data(img, mask) for img, mask in zip(image_generator, mask_generator))
     valid_gen = (adjust_data(img, mask) for img, mask in zip(val_image_generator, val_mask_generator))
