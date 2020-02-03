@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
 from pathlib import Path
+from pprint import pformat
+from textwrap import indent
 
 import tensorflow as tf
 
@@ -57,6 +59,7 @@ data_gen_args = dict(
     #preprocessing_function=foo,  # something to do the warping
     validation_split=0.1,  # Fraction of data to use for validation
 )
+print(f"   Augmentations: \n{indent(pformat(data_gen_args), ' '*18)}")
 train, validate = train_generator(batch_size, 'data/filament/train', 'image', 'label', data_gen_args, save_to_dir=None)
 
 model = unet(learning_rate=learning_rate)
