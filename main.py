@@ -1,12 +1,13 @@
-import numpy as np
-import skimage.io
+import os
+from datetime import datetime
+from pathlib import Path
+from pprint import pformat
+from textwrap import indent
+
 import tensorflow as tf
 
-import data
-import model
-
-image_size = (256, 256)
-batch_size = 2
+from model import unet
+from data import train_generator, test_generator, save_result
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
@@ -20,61 +21,53 @@ if gpus:
         # Memory growth must be set before GPUs have been initialized
         print(e)
 
+job_id = os.environ.get("PBS_JOBID", datetime.now().isoformat(timespec="seconds"))
+
+cwd = Path.cwd()
+output_dir = cwd / job_id
+output_dir.mkdir()
+
+log_dir = cwd/"logs"/job_id
+log_dir.mkdir(parents=True)
+
+print(f"Writing output to {output_dir}")
+print(f"Tensorboard logs written to {log_dir}")
+
+batch_size = 2
+images_per_epoch = 200
+steps_per_epoch = images_per_epoch // batch_size
+epochs = 1000
+learning_rate = 1e-4
+
+print(f"      Batch size: {batch_size}")
+print(f"Images per epoch: {images_per_epoch}")
+print(f" Steps per epoch: {steps_per_epoch}")
+print(f"          Epochs: {epochs}")
+
+print(f"   Learning rate: {learning_rate}")
 
 data_gen_args = dict(
-    rotation_range=15,  # degrees?
-    width_shift_range=0.05,
-    height_shift_range=0.05,
-    shear_range=5,  # degrees?
+    rotation_range=45,  # degrees
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    shear_range=15,  # degrees
     zoom_range=0.1,
-    brightness_range=[0.9, 1.1],
+    brightness_range=[0.8, 1.2],
     horizontal_flip=True,
     vertical_flip=True,
-    fill_mode='mirror',  # reflect?
+    fill_mode='mirror',
     #preprocessing_function=foo,  # something to do the warping
     validation_split=0.1,  # Fraction of data to use for validation
 )
-train, validate, test = data.load_data(
-    "/home/matt/proof_example_data/unet_foo/input_png",
-    "/home/matt/proof_example_data/unet_foo/masks",
-    data_gen_args,
-    target_size=image_size,
-    batch_size=batch_size,
-)
+print(f"   Augmentations: \n{indent(pformat(data_gen_args), ' '*18)}")
+train, validate = train_generator(batch_size, 'data/filament/train', 'image', 'label', data_gen_args, save_to_dir=None)
 
-print(f"Training batch size: {train.batch_size}")
+model = unet(learning_rate=learning_rate)
+model_checkpoint = tf.keras.callbacks.ModelCheckpoint(str(output_dir/'unet_filament.hdf5'), monitor='val_loss', verbose=1, save_best_only=True)
+es = tf.keras.callbacks.EarlyStopping(monitor='val_loss', verbose=1, patience=10)
+tensorboard = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1, write_images=True)
+model.fit(train, steps_per_epoch=steps_per_epoch, epochs=epochs, callbacks=[model_checkpoint, es, tensorboard], validation_data=validate, validation_steps=1)
 
-my_model = model.unet(input_size=image_size + (1,))
-#my_model.load_weights('unet_filaments.hdf5')
-model_checkpoint = tf.keras.callbacks.ModelCheckpoint('unet_filaments.hdf5', monitor='val_loss', verbose=1, save_best_only=True)
-tensorboard = tf.keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=1)
-
-print("# Fitting")
-
-steps_per_epoch = len(train.x) // train.batch_size
-
-print(f"Steps per epoch: {steps_per_epoch}")
-
-my_model.fit(
-    train,
-    steps_per_epoch=steps_per_epoch,
-    epochs=2,  # 5
-    callbacks=[model_checkpoint, tensorboard],
-    validation_data=validate,
-)
-
-print("# Testing")
-
-test_loss, test_acc, test_iou = my_model.evaluate(*test, verbose=0)
-print(f"    Loss: {test_loss:4.3f}\nAccuracy: {test_acc*100:4.1f}%\n     IoU: {test_iou*100:4.1f}%")
-
-print("# Saving")
-
-my_model.save('my_model.hdf5')
-
-print("# Predicting")
-
-example_data = data.load_resize_reshape("/home/matt/proof_example_data/unet_foo/input_png/FoilHole_24677417_Data_24671816_24671817_20181025_1806-79997.png")
-example_data = example_data[np.newaxis, :, :, :]
-results = my_model.predict(example_data, verbose=1)
-skimage.io.imsave("/home/matt/proof_example_data/unet_foo/test_output/blah.png", results[0, :, :, 0])
+testGene = test_generator("data/filament/test")
+results = model.predict(testGene, verbose=1)
+save_result(output_dir, results)

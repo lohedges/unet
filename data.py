@@ -1,97 +1,81 @@
-import os
-import pathlib
-import itertools
-from functools import partial
-
 import numpy as np
-import skimage.io
-import skimage.transform
-from pandas import Series, DataFrame
-from sklearn.model_selection import train_test_split
+import os
+
 import tensorflow as tf
+import skimage.io as io
+import skimage.transform as trans
 
 
-def load_data(input_dir, label_dir, aug_dict, target_size=(256, 256), batch_size=2):
-    input_images = pathlib.Path(input_dir).glob("*")
-    label_images = pathlib.Path(label_dir).glob("*")
-    input = DataFrame({"image": Series(input_images).apply(str), "mask": Series(label_images).apply(str)})
-
-    train_filenames, test_filenames = train_test_split(input, test_size=0.1, random_state=1)
-
-    train_filenames = train_filenames[:10]
-    test_filenames = test_filenames[:2]
-
-    def images(ds):
-        out = []
-        progbar = tf.keras.utils.Progbar(len(ds), unit_name="image")
-        for filename in ds["image"]:
-            out.append(load_resize_reshape(filename, target_size=target_size))
-            progbar.add(1)
-        return np.array(out)
-
-    def masks(ds):
-        out = []
-        progbar = tf.keras.utils.Progbar(len(ds), unit_name="image")
-        for filename in ds["mask"]:
-            mask = load_resize_reshape(filename, target_size=target_size)
-            mask[mask > 0.5] = 1
-            mask[mask <= 0.5] = 0
-            out.append(mask)
-            progbar.add(1)
-        return np.array(out)
-
-    train_images = images(train_filenames)
-    train_masks = masks(train_filenames)
-    train, validation = train_generator(train_images, train_masks, batch_size, aug_dict, target_size=target_size)
-
-    test_images = images(test_filenames)
-    test_masks = masks(test_filenames)
-    test = (test_images, test_masks)
-
-    print(f"   Train examples: {len(train.x)}")
-    print(f"Validate examples: {len(validation.x)}")
-    print(f"    Test examples: {len(test_filenames)}")
-
-    return train, validation, test
+def adjust_data(img, mask):
+    img = img / 255
+    mask = mask / 255
+    mask[mask > 0.5] = 1
+    mask[mask <= 0.5] = 0
+    return img, mask
 
 
-def train_generator(train_images, train_masks, batch_size, aug_dict, image_color_mode="grayscale", mask_color_mode="grayscale",
-                    image_save_prefix="image", mask_save_prefix="mask", save_to_dir=None, target_size=(256, 256),
-                    seed=1):
-    image_datagen = tf.keras.preprocessing.image.ImageDataGenerator(**aug_dict)
-    training = image_datagen.flow(
-        train_images,
-        train_masks,
-        batch_size=batch_size,
-        save_to_dir=save_to_dir,
+def train_generator(batch_size, train_path, image_folder, mask_folder, aug_dict, image_color_mode="grayscale",
+                    mask_color_mode="grayscale", image_save_prefix="image", mask_save_prefix="mask",
+                    save_to_dir=None, target_size=(256, 256), seed=1):
+    """
+    can generate image and mask at the same time
+    use the same seed for image_datagen and mask_datagen to ensure the transformation for image and mask is the same
+    if you want to visualize the results of generator, set save_to_dir = "your path"
+    """
+    datagen = tf.keras.preprocessing.image.ImageDataGenerator(**aug_dict)
+    kwargs = {
+        "directory": train_path,
+        "class_mode": None,
+        "target_size": target_size,
+        "batch_size": batch_size,
+        "save_to_dir": save_to_dir,
+        "seed": seed,
+    }
+    image_generator = datagen.flow_from_directory(
+        classes=[image_folder],
+        color_mode=image_color_mode,
         save_prefix=image_save_prefix,
-        seed=seed,
         subset="training",
+        **kwargs,
     )
-    validation = image_datagen.flow(
-        train_images,
-        train_masks,
-        batch_size=batch_size,
-        save_to_dir=save_to_dir,
+    mask_generator = datagen.flow_from_directory(
+        classes=[mask_folder],
+        color_mode=mask_color_mode,
+        save_prefix=mask_save_prefix,
+        subset="training",
+        **kwargs,
+    )
+    val_image_generator = datagen.flow_from_directory(
+        classes=[image_folder],
+        color_mode=image_color_mode,
         save_prefix=image_save_prefix,
-        seed=seed,
         subset="validation",
+        **kwargs,
     )
-    return training, validation
+    val_mask_generator = datagen.flow_from_directory(
+        classes=[mask_folder],
+        color_mode=mask_color_mode,
+        save_prefix=mask_save_prefix,
+        subset="validation",
+        **kwargs,
+    )
+    train_gen = (adjust_data(img, mask) for img, mask in zip(image_generator, mask_generator))
+    valid_gen = (adjust_data(img, mask) for img, mask in zip(val_image_generator, val_mask_generator))
+    return train_gen, valid_gen
 
 
-def load_resize_reshape(filename, target_size=(256, 256)):
-    img = skimage.io.imread(filename, as_gray=True)
-    img = skimage.transform.resize(img, target_size)
-    img = img[:, :, np.newaxis]
-    d_min = img.min()
-    d_max = img.max()
-    img -= d_min
-    img /= d_max - d_min
-    return img
+def test_generator(test_path, target_size=(256, 256), as_gray=True):
+    filenames = ["FoilHole_24681291_Data_24671848_24671849_20181025_0148-78831.png"]
+    for filename in filenames:
+        img = io.imread(os.path.join(test_path, filename), as_gray=as_gray)
+        img = img / 255
+        img = trans.resize(img, target_size)
+        img = np.reshape(img, img.shape+(1,))
+        img = np.reshape(img, (1,)+img.shape)
+        yield img
 
 
 def save_result(save_path, npyfile):
     for i, item in enumerate(npyfile):
         img = item[:, :, 0]
-        skimage.io.imsave(os.path.join(save_path, "%d_predict.png" % i), img)
+        io.imsave(os.path.join(save_path, "%d_predict.png" % i), img)
