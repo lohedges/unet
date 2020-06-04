@@ -1,7 +1,10 @@
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, Dropout, concatenate
 from tensorflow.keras.optimizers import Adam
+
 import tensorflow as tf
 
+# Import a custom loss function.
+from loss_functions import DiceLoss as loss_function
 
 def unet(pretrained_weights=None, input_size=(256, 256, 1), learning_rate=1e-4):
     inputs = Input(input_size)
@@ -47,7 +50,15 @@ def unet(pretrained_weights=None, input_size=(256, 256, 1), learning_rate=1e-4):
 
     model = tf.keras.models.Model(inputs=inputs, outputs=conv10)
 
-    model.compile(optimizer=Adam(lr=learning_rate), loss='binary_crossentropy', metrics=['accuracy', tf.keras.metrics.MeanIoU(num_classes=2)])
+    # A list of simple metrics. Most other metrics can be computed directly from these.
+    metrics = [
+        tf.keras.metrics.TruePositives(name='tp'),
+        tf.keras.metrics.FalsePositives(name='fp'),
+        tf.keras.metrics.TrueNegatives(name='tn'),
+        tf.keras.metrics.FalseNegatives(name='fn'),
+    ]
+
+    model.compile(optimizer=Adam(lr=learning_rate), loss=loss_function, metrics=metrics)
 
     # model.summary()
 

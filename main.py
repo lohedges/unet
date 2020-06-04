@@ -1,9 +1,9 @@
-import os
 from datetime import datetime
 from pathlib import Path
 from pprint import pformat
 from textwrap import indent
 
+import os
 import tensorflow as tf
 
 from model import unet
@@ -33,7 +33,7 @@ log_dir.mkdir(parents=True)
 print(f"Writing output to {output_dir}")
 print(f"Tensorboard logs written to {log_dir}")
 
-batch_size = 2
+batch_size = 10
 images_per_epoch = 200
 steps_per_epoch = images_per_epoch // batch_size
 epochs = 1000
